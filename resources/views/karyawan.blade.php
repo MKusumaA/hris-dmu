@@ -4,9 +4,9 @@
 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Daftar Karyawan</h2>
-        <button class="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-blue-700 transition">
+        <a href="{{ route('karyawan.tambah') }}" class="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-blue-700 transition">
             + Tambah Data
-        </button>
+        </a>
     </div>
 
     <div class="overflow-x-auto rounded-lg border border-gray-200">

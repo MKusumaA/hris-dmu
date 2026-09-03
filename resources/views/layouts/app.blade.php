@@ -17,13 +17,13 @@
         </div>
         
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <a href="#" class="block px-4 py-2 rounded-lg bg-blue-800 text-white font-medium shadow">
+            <a href="{{ route('dashboard') }}" class="block px-4 py-2 rounded-lg bg-blue-800 text-white font-medium shadow">
                 Dashboard
             </a>
             <a href="{{ route('karyawan') }}" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
                 Data Karyawan
             </a>
-            <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+            <a href="{{ route('kehadiran') }}" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
                 Rekap Kehadiran
             </a>
             <a href="#" class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">

@@ -2,81 +2,101 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Karyawan;
-use App\Models\RekapKehadiran;
-use App\Models\SlipGaji;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class SlipGajiController extends Controller
 {
     public function index()
     {
-        // Menampilkan daftar slip gaji yang sudah dibuat
-        $slips = SlipGaji::with('karyawan')->get();
-        return view('slip_gaji.index', compact('slips'));
+        return redirect('/slip-gaji/kalkulasi');
     }
 
-    public function create($id_karyawan)
+    // Menampilkan halaman daftar karyawan untuk dicetak slipnya
+    public function create()
     {
-        // Mengambil data karyawan & kehadiran untuk bahan kalkulasi
-        $karyawan = Karyawan::where('id_karyawan', $id_karyawan)->firstOrFail();
-        $kehadiran = RekapKehadiran::where('karyawan_id', $id_karyawan)->first();
-
-        return view('slip_gaji.kalkulasi', compact('karyawan', 'kehadiran'));
+        $karyawan = DB::table('karyawan')->get();
+        return view('slip_gaji.kalkulasi', compact('karyawan'));
     }
 
     public function store(Request $request)
     {
-        // Proses simpan hasil kalkulasi ke database
-        SlipGaji::create($request->all());
-        return redirect()->route('slip_gaji.index')->with('success', 'Slip Gaji berhasil dibuat!');
+        // Fungsi simpan riwayat slip gaji bisa dikembangkan di masa depan
     }
 
-    public function cetak_pdf($id)
+    // MESIN PENGHITUNG OTOMATIS & CETAK PDF
+    public function cetak_pdf($id_karyawan)
     {
-        // DATA SEMENTARA: Ini disamakan persis dengan foto desain yang di-ACC
-        // Nanti kita ganti ini dengan data asli dari database
-        $data = [
-            'periode' => '28-Jul-26',
-            'nip' => '1.012.010',
-            'nama' => 'Erlin Puspitasari',
-            'jabatan' => 'Manager General Affair',
-            'divisi' => 'General Affair',
-            'penerimaan' => [
-                'Gaji Pokok' => 3000000,
-                'Jabatan' => 0,
-                'Makan' => 220000,
-                'Kehadiran' => 440000,
-                'Kedisiplinan' => 0,
-                'Lembur' => 0,
-                'Bonus' => 0,
-                'Transport' => 0,
-            ],
-            'potongan' => [
-                'Sakit' => 0,
-                'Ijin' => 0,
-                'Alpha' => 0,
-                'BPJS Kesehatan' => 52888,
-                'BPJS Ketenagakerjaan' => 100653,
-                'PPH 21 TAHUN 2025' => 0,
-                'Keterlambatan' => 0,
-                'Dinas' => 0,
-            ]
+        // 1. Ambil data master karyawan
+        $karyawan = DB::table('karyawan')->where('id_karyawan', $id_karyawan)->first();
+        if(!$karyawan) return "Data karyawan tidak ditemukan!";
+
+        // 2. Ambil data rekap kehadiran bulan ini (Sistem 5 Kode)
+        $periode = date('Y-m'); // Bulan berjalan
+        $kehadiran = DB::table('rekap_kehadiran')
+            ->where('karyawan_id', $id_karyawan)
+            ->where('periode_bulan', $periode)
+            ->get();
+
+        $mt = $kehadiran->where('kode_absensi', 'MT')->sum('jumlah');
+        $tmi = $kehadiran->where('kode_absensi', 'TMI')->sum('jumlah');
+        $tmdl = $kehadiran->where('kode_absensi', 'TMDL')->sum('jumlah');
+        $tmtd = $kehadiran->where('kode_absensi', 'TMTD')->sum('jumlah');
+        $ta = $kehadiran->where('kode_absensi', 'TA')->sum('jumlah');
+
+        // 3. Konstanta Nilai Keuangan (Bisa disesuaikan HRD)
+        $uang_makan_harian = 20000;
+        $uang_transport_harian = 15000;
+        $potongan_terlambat = 10000;
+        $hari_kerja_sebulan = 22; 
+
+        // Logika hari masuk kerja
+        $hari_tidak_masuk = $tmi + $tmtd + $ta;
+        $hari_masuk = $hari_kerja_sebulan - $hari_tidak_masuk; 
+        // Catatan: TMDL (Dinas Luar) tetap dihitung masuk penuh
+
+        // 4. Kalkulasi Total Penerimaan
+        $penerimaan = [
+            'Gaji Pokok' => $karyawan->gaji_pokok ?? 0,
+            'Tunjangan Jabatan' => $karyawan->tunjangan_jabatan ?? 0,
+            'Uang Makan' => $hari_masuk * $uang_makan_harian,
+            'Tunj. Kehadiran' => ($ta > 0 || $tmtd > 0) ? 0 : 200000, // Hangus jika ada Alpa/TMTD
+            'Tunj. Kedisiplinan' => ($mt > 0) ? 0 : 100000, // Hangus jika ada Keterlambatan
+            'Uang Lembur' => 0, // Manual entry masa depan
+            'Bonus' => 0,       // Manual entry masa depan
+            'Tunj. Transport' => $hari_masuk * $uang_transport_harian,
         ];
 
-        // Menghitung otomatis
-        $total_penerimaan = array_sum($data['penerimaan']);
-        $total_potongan = array_sum($data['potongan']);
+        // 5. Kalkulasi Total Potongan
+        $potongan = [
+            'Sakit / Ijin (TMI)' => 0, // Dianggap tidak potong gaji pokok, tapi uang makan otomatis turun
+            'Alpha (TA)' => $ta * 50000, // Misal denda Alpa Rp 50.000/hari
+            'BPJS Kesehatan' => $karyawan->potongan_bpjs_kesehatan ?? 0,
+            'BPJS Ketenagakerjaan' => $karyawan->potongan_bpjs_ketenagakerjaan ?? 0,
+            'PPh 21' => 0,
+            'Keterlambatan (MT)' => $mt * $potongan_terlambat,
+            'Dinas (TMDL)' => 0,
+        ];
+
+        $total_penerimaan = array_sum($penerimaan);
+        $total_potongan = array_sum($potongan);
         $take_home_pay = $total_penerimaan - $total_potongan;
 
-        // Memanggil desain PDF
+        // 6. Siapkan Data untuk Dikirim ke Template PDF
+        $data = [
+            'periode' => date('d-M-Y'),
+            'nip' => $karyawan->id_karyawan,
+            'nama' => $karyawan->nama_lengkap,
+            'jabatan' => $karyawan->jabatan ?? '-',
+            'divisi' => $karyawan->divisi ?? '-',
+            'penerimaan' => $penerimaan,
+            'potongan' => $potongan,
+        ];
+
         $pdf = Pdf::loadView('slip_gaji.cetak_pdf', compact('data', 'total_penerimaan', 'total_potongan', 'take_home_pay'));
-        
-        // Mengatur ukuran kertas (A4)
         $pdf->setPaper('A4', 'portrait');
 
-        // Menampilkan PDF di browser
         return $pdf->stream('Slip-Gaji-'.$data['nama'].'.pdf');
     }
 }

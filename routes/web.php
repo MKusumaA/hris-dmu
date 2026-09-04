@@ -12,7 +12,24 @@ Route::get('/', function () {
 // Jalur 2: Halaman Data Karyawan
 Route::get('/karyawan', function () {
     $karyawan = DB::table('karyawan')->get();
-    return view('karyawan', ['data_karyawan' => $karyawan]);
+    
+    // Menghitung statistik bulan berjalan
+    $periode = date('Y-m');
+    $kasus_terlambat = DB::table('rekap_kehadiran')
+        ->where('periode_bulan', $periode)
+        ->where('kode_absensi', 'MT')
+        ->sum('jumlah');
+        
+    $kasus_alpa = DB::table('rekap_kehadiran')
+        ->where('periode_bulan', $periode)
+        ->where('kode_absensi', 'TA')
+        ->sum('jumlah');
+
+    return view('karyawan', [
+        'data_karyawan' => $karyawan,
+        'kasus_terlambat' => $kasus_terlambat,
+        'kasus_alpa' => $kasus_alpa
+    ]);
 })->name('karyawan');
 
 // Jalur 3: Menampilkan Form Tambah Karyawan
@@ -61,19 +78,18 @@ Route::get('/kehadiran/tambah', function () {
     return view('kehadiran_tambah', ['data_karyawan' => $karyawan]);
 })->name('kehadiran.tambah');
 
-// Jalur 7: Menyimpan Data Kehadiran ke Database
+// Jalur 7: Menyimpan Data Kehadiran ke Database (Sistem 5 Kode)
 Route::post('/kehadiran/store', function (Illuminate\Http\Request $request) {
     DB::table('rekap_kehadiran')->insert([
         'karyawan_id' => $request->karyawan_id,
-        'periode_bulan' => $request->periode_bulan,
-        'hari_hadir' => $request->hari_hadir,
-        'jam_lembur' => $request->jam_lembur,
-        'hari_cuti' => $request->hari_cuti,
-        'hari_terlambat' => $request->hari_terlambat,
+        'kode_absensi' => $request->kode_absensi,
+        'jumlah' => $request->jumlah,
+        'periode_bulan' => date('Y-m'), // TAMBAHAN BARU: Otomatis mengisi periode saat ini
         'created_at' => now(),
         'updated_at' => now(),
     ]);
 
+    // Setelah sukses menyimpan, tendang kembali user ke halaman rekap kehadiran
     return redirect()->route('kehadiran');
 })->name('kehadiran.store');
 

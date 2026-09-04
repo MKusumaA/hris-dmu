@@ -76,3 +76,11 @@ Route::post('/kehadiran/store', function (Illuminate\Http\Request $request) {
 
     return redirect()->route('kehadiran');
 })->name('kehadiran.store');
+
+// Rute untuk melihat halaman kalkulasi dan menyimpan data
+Route::get('/slip-gaji', [App\Http\Controllers\SlipGajiController::class, 'index']);
+Route::get('/slip-gaji/kalkulasi', [App\Http\Controllers\SlipGajiController::class, 'create']);
+Route::post('/slip-gaji', [App\Http\Controllers\SlipGajiController::class, 'store']);
+
+// Rute BARU untuk mencetak PDF
+Route::get('/slip-gaji/cetak/{id}', [App\Http\Controllers\SlipGajiController::class, 'cetak_pdf']);

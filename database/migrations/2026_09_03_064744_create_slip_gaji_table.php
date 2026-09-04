@@ -6,35 +6,43 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('slip_gaji', function (Blueprint $table) {
-            $table->id('id_slip');
-            $table->string('karyawan_id', 20);
-            $table->foreign('karyawan_id')->references('id_karyawan')->on('karyawan')->onDelete('cascade');
+            $table->id();
+            $table->string('karyawan_id'); // Relasi ke ID Karyawan
+            $table->string('periode'); // Contoh: "Oktober 2023"
             
-            $table->string('periode_gaji', 20); // Contoh: "Oktober 2023"
+            // Penerimaan
+            $table->decimal('gaji_pokok', 12, 2);
+            $table->decimal('tunjangan_jabatan', 12, 2)->default(0);
+            $table->decimal('tunjangan_makan', 12, 2)->default(0);
+            $table->decimal('tunjangan_kehadiran', 12, 2)->default(0);
+            $table->decimal('tunjangan_kedisiplinan', 12, 2)->default(0);
+            $table->decimal('lembur', 12, 2)->default(0);
+            $table->decimal('bonus', 12, 2)->default(0);
+            $table->decimal('transport', 12, 2)->default(0);
             
-            // Kolom Pendapatan
-            $table->bigInteger('pendapatan_pokok')->default(0);
-            $table->bigInteger('tunjangan_jabatan')->default(0);
-            $table->bigInteger('tunjangan_makan')->default(0);
-            $table->bigInteger('nominal_lembur')->default(0);
+            // Potongan
+            $table->decimal('potongan_sakit', 12, 2)->default(0);
+            $table->decimal('potongan_ijin', 12, 2)->default(0);
+            $table->decimal('potongan_alpha', 12, 2)->default(0);
+            $table->decimal('bpjs_kesehatan', 12, 2)->default(0);
+            $table->decimal('bpjs_ketenagakerjaan', 12, 2)->default(0);
+            $table->decimal('pph21', 12, 2)->default(0);
+            $table->decimal('potongan_terlambat', 12, 2)->default(0);
+            $table->decimal('potongan_dinas', 12, 2)->default(0);
+
+            $table->decimal('total_penerimaan', 12, 2);
+            $table->decimal('total_potongan', 12, 2);
+            $table->decimal('take_home_pay', 12, 2);
             
-            // Kolom Potongan
-            $table->bigInteger('potongan_pph21')->default(0);
-            $table->bigInteger('potongan_bpjs')->default(0);
-            $table->bigInteger('potongan_lain')->default(0); // Untuk terlambat/koperasi
-            
-            // Hasil Akhir
-            $table->bigInteger('take_home_pay')->default(0);
-            $table->enum('status_dokumen', ['Draft', 'Approved', 'Tersedia'])->default('Draft');
-            
+            $table->string('status_pembayaran')->default('Draft'); // Draft atau Terbayar
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('slip_gaji');
     }

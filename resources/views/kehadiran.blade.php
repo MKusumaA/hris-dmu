@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HRIS - Rekap Kehadiran</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 font-sans">
     <div class="flex h-screen">
@@ -23,6 +23,10 @@
             <a href="/kehadiran" class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 Rekap Kehadiran
+            </a>
+            <a href="/slip-gaji/kalkulasi" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl font-medium transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Kalkulasi Gaji
             </a>
         </aside>
 
@@ -49,6 +53,7 @@
                             <th class="px-6 py-4 font-semibold">TMDL</th>
                             <th class="px-6 py-4 font-semibold">TMTD</th>
                             <th class="px-6 py-4 font-semibold">TA</th>
+                            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm text-slate-700">
@@ -69,6 +74,14 @@
                                         <td class="px-6 py-4">{{ $tmdl > 0 ? $tmdl : '-' }}</td>
                                         <td class="px-6 py-4">{{ $tmtd > 0 ? $tmtd : '-' }}</td>
                                         <td class="px-6 py-4 text-red-600 font-semibold">{{ $ta > 0 ? $ta : '-' }}</td>
+                                        <td class="px-6 py-4 flex justify-end gap-2">
+                                            <a href="{{ route('kehadiran.edit', $id_karyawan) }}" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Edit">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                            </a>
+                                            <a href="{{ route('kehadiran.delete', $id_karyawan) }}" onclick="return confirm('Apakah Anda yakin ingin menghapus data rekap ini?')" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors" title="Hapus">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>

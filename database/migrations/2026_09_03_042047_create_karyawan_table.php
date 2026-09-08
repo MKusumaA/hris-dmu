@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('nama_lengkap');
             $table->string('divisi');
             $table->string('jabatan');
-            $table->enum('status_kerja', ['Tetap', 'Kontrak']);
+            $table->string('status_kerja');
             $table->date('tgl_bergabung');
             
             // Data Finansial & Pajak (Bisa dikosongkan/nullable jika belum ada)

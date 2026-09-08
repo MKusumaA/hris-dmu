@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HRIS - Kalkulasi Gaji</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 font-sans">
     <div class="flex h-screen">
@@ -50,10 +50,18 @@
                             <td class="px-6 py-4 font-medium">{{ $k->nama_lengkap }}</td>
                             <td class="px-6 py-4">{{ $k->jabatan }}</td>
                             <td class="px-6 py-4 text-right">
-                                <!-- Tombol Cetak PDF -->
-                                <a target="_blank" href="/slip-gaji/cetak/{{ $k->id_karyawan }}" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors shadow-sm">
-                                    🖨️ Cetak Slip PDF
-                                </a>
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ route('karyawan.edit', $k->id_karyawan) }}" class="inline-block px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-medium transition-colors shadow-sm">
+                                        Edit Data
+                                    </a>
+                                    <a href="{{ route('karyawan.delete', $k->id_karyawan) }}" onclick="return confirm('Hapus data karyawan ini?')" class="inline-block px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium transition-colors shadow-sm">
+                                        Hapus
+                                    </a>
+                                    <!-- Tombol Cetak PDF -->
+                                    <a target="_blank" href="/slip-gaji/cetak/{{ $k->id_karyawan }}" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors shadow-sm">
+                                        🖨️ Cetak Slip PDF
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         @endforeach

@@ -52,10 +52,10 @@
         <td style="width: 50%; vertical-align: top;">
             <table class="tabel-dalam garis-tipis" style="width: 70%; float: right;">
                 <tr><td colspan="3" class="text-center bold bg-abu">REKAP PERIJINAN</td></tr>
-                <tr><td width="50%">Keterlambatan</td><td width="5%">:</td><td class="text-right">-</td></tr>
-                <tr><td>Sakit</td><td>:</td><td class="text-right">-</td></tr>
-                <tr><td>Ijin</td><td>:</td><td class="text-right">-</td></tr>
-                <tr><td>Alpha</td><td>:</td><td class="text-right">-</td></tr>
+                <tr><td width="50%">Keterlambatan</td><td width="5%">:</td><td class="text-right">{{ $data['kehadiran']['Keterlambatan'] ?? '-' }}</td></tr>
+                <tr><td>Sakit</td><td>:</td><td class="text-right">{{ $data['kehadiran']['Sakit'] ?? '-' }}</td></tr>
+                <tr><td>Ijin</td><td>:</td><td class="text-right">{{ $data['kehadiran']['Ijin'] ?? '-' }}</td></tr>
+                <tr><td>Alpha</td><td>:</td><td class="text-right">{{ $data['kehadiran']['Alpha'] ?? '-' }}</td></tr>
             </table>
         </td>
     </tr>
@@ -124,15 +124,15 @@
                 </div>
                 
                 <table style="margin-top: 20px; font-size: 11px;">
-                    <tr><td width="100">Ditransfer ke</td><td width="10">:</td><td class="bold">Muamalat</td></tr>
-                    <tr><td>Nomer Rekening</td><td>:</td><td>-</td></tr>
-                    <tr><td>Atas nama</td><td>:</td><td>Erlin Puspitasari</td></tr>
+                    <tr><td width="100">Ditransfer ke</td><td width="10">:</td><td class="bold">{{ $karyawan->bank_tujuan ?? '-' }}</td></tr>
+                    <tr><td>Nomer Rekening</td><td>:</td><td>{{ $karyawan->no_rekening ?? '-' }}</td></tr>
+                    <tr><td>Atas nama</td><td>:</td><td>{{ $karyawan->atas_nama ?? '-' }}</td></tr>
                 </table>
             </td>
             <td style="width: 40%; vertical-align: bottom; text-align: center;">
-                <div>PT. Daya Matahari Utama</div>
+                <div>{{ $karyawan->nama_pt ?? '-' }}</div>
                 <br><br><br><br>
-                <div class="bold" style="text-decoration: underline;">Erlin Puspitasari, SE</div>
+                <div class="bold" style="text-decoration: underline;">{{ $karyawan->nama_hrd ?? '-' }}</div>
             </td>
         </tr>
     </table>

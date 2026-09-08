@@ -45,45 +45,34 @@ class SlipGajiController extends Controller
         $tmtd = $kehadiran->where('kode_absensi', 'TMTD')->sum('jumlah');
         $ta = $kehadiran->where('kode_absensi', 'TA')->sum('jumlah');
 
-        // 3. Konstanta Nilai Keuangan (Bisa disesuaikan HRD)
-        $uang_makan_harian = 20000;
-        $uang_transport_harian = 15000;
-        $potongan_terlambat = 10000;
-        $hari_kerja_sebulan = 22; 
-
-        // Logika hari masuk kerja
-        $hari_tidak_masuk = $tmi + $tmtd + $ta;
-        $hari_masuk = $hari_kerja_sebulan - $hari_tidak_masuk; 
-        // Catatan: TMDL (Dinas Luar) tetap dihitung masuk penuh
-
-        // 4. Kalkulasi Total Penerimaan
+        // 3. Kalkulasi Total Penerimaan (MURNI dari Database)
         $penerimaan = [
             'Gaji Pokok' => $karyawan->gaji_pokok ?? 0,
             'Tunjangan Jabatan' => $karyawan->tunjangan_jabatan ?? 0,
-            'Uang Makan' => $hari_masuk * $uang_makan_harian,
-            'Tunj. Kehadiran' => ($ta > 0 || $tmtd > 0) ? 0 : 200000, // Hangus jika ada Alpa/TMTD
-            'Tunj. Kedisiplinan' => ($mt > 0) ? 0 : 100000, // Hangus jika ada Keterlambatan
-            'Uang Lembur' => 0, // Manual entry masa depan
-            'Bonus' => 0,       // Manual entry masa depan
-            'Tunj. Transport' => $hari_masuk * $uang_transport_harian,
+            'Uang Makan' => $karyawan->tunjangan_makan ?? 0,
+            'Tunj. Kehadiran' => $karyawan->tunjangan_kehadiran ?? 0,
+            'Tunj. Kedisiplinan' => $karyawan->tunjangan_kedisiplinan ?? 0,
+            'Uang Lembur' => $karyawan->uang_lembur ?? 0,
+            'Bonus' => $karyawan->bonus ?? 0,
+            'Tunj. Transport' => $karyawan->tunjangan_transport ?? 0,
         ];
 
-        // 5. Kalkulasi Total Potongan
+        // 4. Kalkulasi Total Potongan (MURNI dari Database)
         $potongan = [
-            'Sakit / Ijin (TMI)' => 0, // Dianggap tidak potong gaji pokok, tapi uang makan otomatis turun
-            'Alpha (TA)' => $ta * 50000, // Misal denda Alpa Rp 50.000/hari
+            'Sakit / Ijin' => $karyawan->potongan_sakit ?? 0, 
+            'Alpha' => $karyawan->potongan_alpha ?? 0,
             'BPJS Kesehatan' => $karyawan->potongan_bpjs_kesehatan ?? 0,
             'BPJS Ketenagakerjaan' => $karyawan->potongan_bpjs_ketenagakerjaan ?? 0,
-            'PPh 21' => 0,
-            'Keterlambatan (MT)' => $mt * $potongan_terlambat,
-            'Dinas (TMDL)' => 0,
+            'PPh 21' => $karyawan->potongan_pph21_2025 ?? 0,
+            'Keterlambatan' => $karyawan->potongan_keterlambatan ?? 0,
+            'Dinas' => $karyawan->potongan_dinas ?? 0,
         ];
 
         $total_penerimaan = array_sum($penerimaan);
         $total_potongan = array_sum($potongan);
         $take_home_pay = $total_penerimaan - $total_potongan;
 
-        // 6. Siapkan Data untuk Dikirim ke Template PDF
+        // 5. Siapkan Data untuk Dikirim ke Template PDF
         $data = [
             'periode' => date('d-M-Y'),
             'nip' => $karyawan->id_karyawan,
@@ -92,9 +81,15 @@ class SlipGajiController extends Controller
             'divisi' => $karyawan->divisi ?? '-',
             'penerimaan' => $penerimaan,
             'potongan' => $potongan,
+            'kehadiran' => [
+                'Keterlambatan' => $mt,
+                'Sakit' => $tmi,
+                'Ijin' => $tmtd,
+                'Alpha' => $ta
+            ]
         ];
 
-        $pdf = Pdf::loadView('slip_gaji.cetak_pdf', compact('data', 'total_penerimaan', 'total_potongan', 'take_home_pay'));
+        $pdf = Pdf::loadView('slip_gaji.cetak_pdf', compact('data', 'total_penerimaan', 'total_potongan', 'take_home_pay', 'karyawan'));
         $pdf->setPaper('A4', 'portrait');
 
         return $pdf->stream('Slip-Gaji-'.$data['nama'].'.pdf');

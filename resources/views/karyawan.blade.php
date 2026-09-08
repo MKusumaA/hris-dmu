@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HRIS - Daftar Karyawan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 font-sans">
 
@@ -39,9 +39,15 @@
         <!-- AREA KONTEN UTAMA -->
         <main class="flex-1 p-8 overflow-y-auto">
             
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold text-slate-800">Daftar Karyawan</h1>
-                <p class="text-slate-500 text-sm mt-1">Kelola data master dan informasi finansial karyawan.</p>
+            <div class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Daftar Karyawan</h1>
+                    <p class="text-slate-500 text-sm mt-1">Kelola data master dan informasi finansial karyawan.</p>
+                </div>
+                <a href="{{ route('karyawan.tambah') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Tambah Karyawan
+                </a>
             </div>
 
             <!-- WIDGET CARDS STATISTIK (Data Dinamis) -->
@@ -98,12 +104,12 @@
                             <td class="px-6 py-3 font-medium">{{ $k->nama_lengkap }}</td>
                             <td class="px-6 py-3">{{ $k->jabatan ?? '-' }}</td>
                             <td class="px-6 py-3 flex justify-end gap-2">
-                                <button class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Edit">
+                                <a href="{{ route('karyawan.edit', $k->id_karyawan) }}" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                </button>
-                                <button class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors" title="Hapus">
+                                </a>
+                                <a href="{{ route('karyawan.delete', $k->id_karyawan) }}" onclick="return confirm('Apakah Anda yakin ingin menghapus data karyawan ini?')" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors" title="Hapus">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
+                                </a>
                             </td>
                         </tr>
                         @endforeach
